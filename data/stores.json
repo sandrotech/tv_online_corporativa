@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "name": "Loja 01",
+    "video": "demo.mp4"
+  },
+  {
+    "id": 2,
+    "name": "Loja 02",
+    "video": "video03.mp4"
+  }
+]
