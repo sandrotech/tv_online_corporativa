@@ -11,8 +11,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
     const store = stores.find((s) => s.id === Number(id));
 
-    return NextResponse.json({
-        loja: store.name,
-        video: store.video
-    });
+    if (!store) {
+        return NextResponse.json({ message: "Loja não encontrada" }, { status: 404 });
+    }
+
+    return NextResponse.json({ loja: store.name, video: store.video });
 }

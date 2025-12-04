@@ -17,6 +17,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     const { id } = await params;
     const stores = loadStores();
     const store = stores.find((s) => s.id === Number(id));
+    if (!store) {
+        return NextResponse.json({ message: "Loja não encontrada" }, { status: 404 });
+    }
     return NextResponse.json(store);
 }
 
