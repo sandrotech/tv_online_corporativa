@@ -28,7 +28,11 @@ export default function StorePage({ params }: Props) {
                 <h1>{store.name}</h1>
                 <p>Vídeo atual: <b>{store.video || "Nenhum definido"}</b></p>
 
-                <SelectVideo storeId={id} currentVideo={store.video} />
+                <SelectVideo
+                    storeId={id}
+                    currentVideo={store.video}
+                    onSaved={(newVideo) => startTransition(() => setStore((s) => (s ? { ...s, video: newVideo || "" } : s)))}
+                />
 
                 <button
                     onClick={() => (window.location.href = "/lojas")}

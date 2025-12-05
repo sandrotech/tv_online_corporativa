@@ -8,7 +8,9 @@ function loadStores() {
     return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
 
-function saveStores(data: any) {
+type Store = { id: number; name: string; video: string };
+
+function saveStores(data: Store[]) {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 

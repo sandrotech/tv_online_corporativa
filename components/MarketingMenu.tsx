@@ -9,6 +9,13 @@ type Props = { collapsed: boolean; onToggle: () => void };
 export default function MarketingMenu({ collapsed, onToggle }: Props) {
     const pathname = usePathname();
     const [animate, setAnimate] = useState(false);
+    function logout() {
+        try {
+            localStorage.removeItem("auth_user");
+            localStorage.removeItem("auth_token");
+        } catch { }
+        window.location.href = "/";
+    }
 
     const menu = [
         { name: "Painel de Vídeos", path: "/painel", icon: "🎞️" },
@@ -71,13 +78,11 @@ export default function MarketingMenu({ collapsed, onToggle }: Props) {
             {!collapsed && (
                 <h2
                     style={{
-                        marginBottom: 40,
-                        fontSize: "1.4rem",
-                        fontWeight: 600,
-                        letterSpacing: "0.5px",
-                        background: `linear-gradient(90deg, ${accent}, #b38cff)`,
-                        WebkitBackgroundClip: "text",
-                        color: "transparent",
+                        marginBottom: 30,
+                        fontSize: "1.2rem",
+                        fontWeight: 700,
+                        letterSpacing: "0.3px",
+                        color: "#e5e7eb",
                         opacity: animate ? 1 : 0,
                         transform: animate ? "translateY(0)" : "translateY(-8px)",
                         transition: "all 420ms ease",
@@ -95,56 +100,32 @@ export default function MarketingMenu({ collapsed, onToggle }: Props) {
                         key={item.path}
                         href={item.path}
                         style={{
-                            padding: collapsed ? "12px" : "14px 12px",
-                            borderRadius: 10,
-                            background: active
-                                ? `linear-gradient(90deg, ${accent}, #9b79ff)`
-                                : "transparent",
-                            border: active
-                                ? "1px solid rgba(255,255,255,0.15)"
-                                : "1px solid transparent",
-                            marginBottom: 12,
-                            color: active ? "#fff" : "rgba(255,255,255,0.8)",
+                            padding: collapsed ? "12px" : "12px 12px",
+                            borderRadius: 12,
+                            background: active ? "rgba(255,255,255,0.06)" : "transparent",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            marginBottom: 10,
+                            color: active ? "#fff" : "rgba(255,255,255,0.85)",
                             textDecoration: "none",
-                            fontSize: "1.05rem",
+                            fontSize: "1rem",
                             fontWeight: active ? 600 : 500,
-                            transition: "all 240ms ease",
+                            transition: "all 200ms ease",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: collapsed ? "center" : "flex-start",
                             gap: collapsed ? 0 : 12,
-                            boxShadow: active ? "0 4px 14px rgba(123,92,255,0.25)" : "none",
-
-                            // ANIMAÇÃO DE ENTRADA EM CASCATA
+                            borderLeft: active ? `3px solid ${accent}` : "3px solid transparent",
                             opacity: animate ? 1 : 0,
-                            transform: animate
-                                ? "translateX(0)"
-                                : "translateX(-14px)",
-                            transitionDelay: `${index * 90}ms`,
-
-                            // ANIMAÇÃO NO HOVER
-                            ...(active
-                                ? {
-                                    transform: animate
-                                        ? "translateX(0)"
-                                        : "translateX(-14px)",
-                                }
-                                : {
-                                    ":hover": {
-                                        background: "rgba(255,255,255,0.06)",
-                                    },
-                                }),
+                            transform: animate ? "translateX(0)" : "translateX(-10px)",
+                            transitionDelay: `${index * 80}ms`,
                         }}
                         onMouseEnter={(e) => {
                             if (!active) {
-                                e.currentTarget.style.transform = "scale(1.04)";
-                                e.currentTarget.style.background =
-                                    "rgba(255,255,255,0.08)";
+                                e.currentTarget.style.background = "rgba(255,255,255,0.08)";
                             }
                         }}
                         onMouseLeave={(e) => {
                             if (!active) {
-                                e.currentTarget.style.transform = "scale(1)";
                                 e.currentTarget.style.background = "transparent";
                             }
                         }}
@@ -163,6 +144,68 @@ export default function MarketingMenu({ collapsed, onToggle }: Props) {
                     </Link>
                 );
             })}
+
+            <div
+                style={{
+                    marginTop: "auto",
+                    paddingTop: 14,
+                    borderTop: "1px solid rgba(255,255,255,0.08)",
+                }}
+            >
+                <a
+                    href="https://portfolio.alessandrosantos.dev/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "100%",
+                        padding: collapsed ? 6 : 10,
+                        borderRadius: 12,
+                        background: "rgba(255,255,255,0.07)",
+                        color: "#e5e7eb",
+                        textDecoration: "none",
+                        fontWeight: 600,
+                        marginBottom: 12,
+                        transform: "translateY(0)",
+                        transition: "transform 160ms ease, background 160ms ease",
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-1px)";
+                        e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.background = "rgba(255,255,255,0.07)";
+                    }}
+                >
+                    {!collapsed && "Desenvolvido por Alessandro Santos"}
+                    {collapsed && "A. Santos"}
+                </a>
+                <button
+                    onClick={logout}
+                    style={{
+                        width: "100%",
+                        padding: collapsed ? 10 : 12,
+                        borderRadius: 10,
+                        background: "#e02424",
+                        color: "#fff",
+                        border: "1px solid rgba(255,255,255,0.12)",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        transition: "transform 160ms ease, opacity 160ms ease",
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "scale(1.03)";
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "scale(1)";
+                    }}
+                >
+                    Sair
+                </button>
+            </div>
         </aside>
     );
 }

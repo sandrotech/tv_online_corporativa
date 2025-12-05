@@ -2,9 +2,16 @@
 
 import { useEffect, useState } from "react";
 
-export default function SelectVideo({ storeId, currentVideo, onSaved }) {
+type Props = { storeId: string; currentVideo: string; onSaved?: (video?: string) => void };
+
+export default function SelectVideo({ storeId, currentVideo, onSaved }: Props) {
     const [video, setVideo] = useState(currentVideo);
     const [videos, setVideos] = useState<string[]>([]);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        setVideo(currentVideo);
+    }, [currentVideo]);
 
     useEffect(() => {
         async function loadVideos() {
@@ -16,13 +23,15 @@ export default function SelectVideo({ storeId, currentVideo, onSaved }) {
     }, []);
 
     async function saveVideo() {
-        await fetch(`/api/lojas/${storeId}/video`, {
-            method: "POST",
+        if (saving) return;
+        setSaving(true);
+        await fetch(`/api/lojas/${storeId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ video }),
         });
-
-        alert("Vídeo atualizado com sucesso!");
-        if (onSaved) onSaved();
+        if (onSaved) onSaved(video);
+        setSaving(false);
     }
 
     return (
@@ -44,10 +53,11 @@ export default function SelectVideo({ storeId, currentVideo, onSaved }) {
 
             <button
                 onClick={saveVideo}
+                disabled={saving}
                 className="mt-4 px-4 py-2 rounded-xl text-white"
-                style={{ background: "#7b5cff" }}
+                style={{ background: "#7b5cff", opacity: saving ? 0.7 : 1, cursor: saving ? "not-allowed" : "pointer" }}
             >
-                Salvar vídeo da loja
+                {saving ? "Salvando..." : "Salvar vídeo da loja"}
             </button>
         </div>
     );
