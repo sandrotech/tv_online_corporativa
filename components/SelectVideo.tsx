@@ -1,55 +1,52 @@
 "use client";
 
-import { useEffect, useState, startTransition } from "react";
+import { useEffect, useState } from "react";
 
-type Props = { storeId: string; currentVideo: string };
-
-export default function SelectVideo({ storeId, currentVideo }: Props) {
+export default function SelectVideo({ storeId, currentVideo, onSaved }) {
+    const [video, setVideo] = useState(currentVideo);
     const [videos, setVideos] = useState<string[]>([]);
-    const [selected, setSelected] = useState(currentVideo);
 
     useEffect(() => {
-        (async () => {
-            try {
-                const res = await fetch("/api/videos-list");
-                const data: string[] = await res.json();
-                startTransition(() => setVideos(data));
-            } catch {
-                startTransition(() => setVideos([]));
-            }
-        })();
+        async function loadVideos() {
+            const res = await fetch("/api/videos");
+            const list = await res.json();
+            setVideos(list);
+        }
+        loadVideos();
     }, []);
 
     async function saveVideo() {
-        await fetch(`/api/lojas/${storeId}`, {
-            method: "PUT",
-            body: JSON.stringify({ video: selected })
+        await fetch(`/api/lojas/${storeId}/video`, {
+            method: "POST",
+            body: JSON.stringify({ video }),
         });
 
         alert("Vídeo atualizado com sucesso!");
+        if (onSaved) onSaved();
     }
 
     return (
-        <div>
-            <h3>Escolher vídeo</h3>
+        <div className="flex flex-col gap-4">
+
+            <label className="text-gray-700 text-sm">Escolher vídeo</label>
 
             <select
-                value={selected}
-                onChange={(e) => setSelected(e.target.value)}
-                style={{ padding: 10, marginBottom: 20, minWidth: 220 }}
+                value={video}
+                onChange={(e) => setVideo(e.target.value)}
+                className="border p-2 rounded-lg"
             >
-                <option value="">Nenhum</option>
-
-                {videos.map((v: string) => (
+                {videos.map((v) => (
                     <option key={v} value={v}>
-                        {v}
+                        {v.replace(".mp4", "")}
                     </option>
                 ))}
             </select>
 
-            <br />
-
-            <button onClick={saveVideo} style={{ padding: 10 }}>
+            <button
+                onClick={saveVideo}
+                className="mt-4 px-4 py-2 rounded-xl text-white"
+                style={{ background: "#7b5cff" }}
+            >
                 Salvar vídeo da loja
             </button>
         </div>

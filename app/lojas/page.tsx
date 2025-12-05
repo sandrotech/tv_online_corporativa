@@ -1,15 +1,27 @@
 "use client";
 
 import { useEffect, useState, startTransition } from "react";
-import StoreCard from "@/components/StoreCard";
 import MarketingLayout from "@/app/marketing-layout";
+import StoreCard from "@/components/StoreCard";
 import SelectVideo from "@/components/SelectVideo";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function StoresPage() {
     type Store = { id: number; name: string; video: string };
+
     const [stores, setStores] = useState<Store[]>([]);
     const [configId, setConfigId] = useState<number | null>(null);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newStoreName, setNewStoreName] = useState("");
+    const [animate, setAnimate] = useState(false);
 
+    const accent = "#7b5cff";
+
+    useEffect(() => {
+        setTimeout(() => setAnimate(true), 120);
+    }, []);
+
+    // carregar lojas
     useEffect(() => {
         (async () => {
             const res = await fetch("/api/lojas");
@@ -18,106 +30,164 @@ export default function StoresPage() {
         })();
     }, []);
 
+    // Criar loja e recarregar
     async function addStore() {
-        const name = prompt("Nome da nova loja:");
-        if (!name) return;
+        if (!newStoreName.trim()) return;
 
         await fetch("/api/lojas", {
             method: "POST",
-            body: JSON.stringify({ name })
+            body: JSON.stringify({ name: newStoreName }),
         });
 
-        const res = await fetch("/api/lojas");
-        const data: Store[] = await res.json();
-        startTransition(() => setStores(data));
+        window.location.reload(); // 🔥 recarrega a página
     }
 
     return (
         <MarketingLayout>
-            <div style={{ padding: "clamp(16px, 3vw, 40px)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-                    <h1 style={{ fontSize: "1.8rem" }}>Lojas</h1>
+            <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45 }}
+                className="px-6 md:px-12 py-10 font-inter"
+            >
+                {/* HEADER */}
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: animate ? 1 : 0, y: animate ? 0 : -10 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex items-center justify-between mb-10"
+                >
+                    <h1 className="text-3xl font-extrabold bg-gradient-to-r from-[#7b5cff] to-[#b38cff] bg-clip-text text-transparent">
+                        🏬 Lojas
+                    </h1>
+
                     <button
-                        onClick={addStore}
-                        style={{
-                            padding: "10px 14px",
-                            background: "#111",
-                            color: "white",
-                            borderRadius: 8,
-                            border: "none",
-                            cursor: "pointer",
-                            boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-                            transition: "transform 160ms ease, box-shadow 160ms ease",
-                        }}
+                        onClick={() => setShowAddModal(true)}
+                        className="px-4 py-2 rounded-xl text-white shadow-lg transition transform hover:scale-105"
+                        style={{ background: accent }}
                     >
                         ➕ Adicionar Loja
                     </button>
-                </div>
+                </motion.div>
 
-                <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
-                    {stores.map((store) => (
-                        <StoreCard key={store.id} store={store} onConfig={() => setConfigId(store.id)} />
+                {/* LISTA DE LOJAS */}
+                <div className="flex flex-wrap gap-6">
+                    {stores.map((store, i) => (
+                        <motion.div
+                            key={store.id}
+                            initial={{ opacity: 0, y: 25 }}
+                            animate={{
+                                opacity: animate ? 1 : 0,
+                                y: animate ? 0 : 25,
+                            }}
+                            transition={{ duration: 0.45, delay: i * 0.09 }}
+                        >
+                            <StoreCard store={store} onConfig={() => setConfigId(store.id)} />
+                        </motion.div>
                     ))}
                 </div>
 
-                {configId !== null && (
-                    <div
-                        role="dialog"
-                        aria-modal="true"
-                        style={{
-                            position: "fixed",
-                            inset: 0,
-                            background: "rgba(0,0,0,0.35)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            zIndex: 2000,
-                        }}
-                        onClick={() => setConfigId(null)}
-                    >
-                        <div
-                            onClick={(e) => e.stopPropagation()}
-                            style={{
-                                width: "min(640px, 92vw)",
-                                background: "white",
-                                borderRadius: 12,
-                                boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-                                padding: 24,
-                                transform: "translateY(0)",
-                                transition: "transform 200ms ease, opacity 200ms ease",
-                            }}
+                {/* MODAL CONFIGURAR LOJA */}
+                <AnimatePresence>
+                    {configId !== null && (
+                        <motion.div
+                            className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-[2000]"
+                            onClick={() => setConfigId(null)}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
                         >
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                                <h2 style={{ fontSize: "1.4rem" }}>
-                                    {stores.find((s) => s.id === configId)?.name}
-                                </h2>
-                                <button
-                                    onClick={() => setConfigId(null)}
-                                    aria-label="Fechar"
-                                    style={{
-                                        width: 36,
-                                        height: 36,
-                                        borderRadius: "50%",
-                                        border: "none",
-                                        background: "#eee",
-                                        cursor: "pointer",
-                                    }}
-                                >
-                                    ✕
-                                </button>
-                            </div>
+                            <motion.div
+                                onClick={(e) => e.stopPropagation()}
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className="bg-white/95 rounded-2xl shadow-2xl p-7 w-full max-w-xl flex flex-col gap-5"
+                            >
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-xl font-bold">
+                                        {stores.find((s) => s.id === configId)?.name}
+                                    </h2>
 
-                            <p style={{ marginBottom: 12 }}>
-                                Vídeo atual: <b>{stores.find((s) => s.id === configId)?.video || "Nenhum definido"}</b>
-                            </p>
+                                    <button
+                                        onClick={() => setConfigId(null)}
+                                        className="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center hover:bg-black/10 transition"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
 
-                            <div>
-                                <SelectVideo storeId={String(configId)} currentVideo={stores.find((s) => s.id === configId)?.video || ""} />
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
+                                <p className="text-gray-600">
+                                    Vídeo atual:{" "}
+                                    <b>
+                                        {stores.find((s) => s.id === configId)?.video ||
+                                            "Nenhum definido"}
+                                    </b>
+                                </p>
+
+                                {/* 🔥 QUANDO O VÍDEO É SALVO → RECARREGA */}
+                                <SelectVideo
+                                    storeId={String(configId)}
+                                    currentVideo={
+                                        stores.find((s) => s.id === configId)?.video || ""
+                                    }
+                                    onSaved={() => window.location.reload()}
+                                />
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* MODAL ADICIONAR LOJA */}
+                <AnimatePresence>
+                    {showAddModal && (
+                        <motion.div
+                            className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-[3000]"
+                            onClick={() => setShowAddModal(false)}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            <motion.div
+                                onClick={(e) => e.stopPropagation()}
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className="bg-white/95 rounded-2xl shadow-2xl p-7 w-full max-w-md flex flex-col gap-5"
+                            >
+                                <h2 className="text-xl font-bold">🏬 Nova Loja</h2>
+
+                                <label className="text-gray-700 text-sm">Nome da loja</label>
+
+                                <input
+                                    autoFocus
+                                    value={newStoreName}
+                                    onChange={(e) => setNewStoreName(e.target.value)}
+                                    placeholder="Digite o nome da loja..."
+                                    className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7b5cff]"
+                                />
+
+                                <div className="flex justify-end gap-3 mt-2">
+                                    <button
+                                        onClick={() => setShowAddModal(false)}
+                                        className="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 transition"
+                                    >
+                                        Cancelar
+                                    </button>
+
+                                    <button
+                                        onClick={addStore}
+                                        className="px-4 py-2 rounded-xl text-white shadow-md"
+                                        style={{ background: accent }}
+                                    >
+                                        Criar Loja
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
         </MarketingLayout>
     );
 }
