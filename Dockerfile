@@ -1,19 +1,15 @@
-FROM node:20-alpine
-
+# Etapa 1: build
+FROM node:18-alpine AS builder
 WORKDIR /app
-
-COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* bun.lockb* ./
-RUN npm ci --no-audit --no-fund || npm install
-
+COPY package*.json ./
+RUN npm install
 COPY . .
-
-ENV NODE_ENV=production
-# Porta padrão, mas pode ser sobrescrita em runtime
-ENV PORT=3000
-
 RUN npm run build
 
-# Expondo apenas a variável, não um número fixo
-EXPOSE ${PORT}
-
-CMD ["npm","run","start"]
+# Etapa 2: execução
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=builder /app ./
+EXPOSE 3000
+ENV PORT=3000
+CMD ["npm", "start"]
